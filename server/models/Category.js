@@ -2,8 +2,8 @@ const mongoose = require('mongoose')
 
 const schema = new mongoose.Schema({
   name: { type: String },
-//   parent: { type: mongoose.SchemaTypes.ObjectId, ref: 'Category' },
-//   title: { type: String },
+  parent: { type: mongoose.SchemaTypes.ObjectId, ref: 'Category' },
+  title: { type: String },
 //   banner: {type: String},
 })
 // schema.virtual('children', {
