@@ -38,13 +38,25 @@
     methods: {
           // 获取列表
       async fetch() {
-        const res = await this.$http.get(
-          `/categories`);
+        const res = await this.$http.get(`/categories`);
         this.items = res.data;
-        console.log(res,"res-121")
         this.total = res.data.count;
       },
-
+      // 删除
+      async remove(row) {
+        this.$confirm(`是否删除分类"${row.name}"`, '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(async () => {
+          await this.$http.delete(`/categories/${row._id}`)
+          this.$message({
+            type: 'success',
+            message: '删除成功!'
+          });
+          this.fetch(); // 刷新列表
+        }).catch(() => {});
+      },
     }
   }
 </script>
