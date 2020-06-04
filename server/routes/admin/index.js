@@ -1,35 +1,58 @@
 module.exports = app => {
     const express = require("express")
-    const router = express.Router()
+    const router = express.Router({
+        mergeParams: true // 合并url参数
+    })
     const Category = require("../../models/Category")
-    router.post('/categories', async (req, res) => {
-        const model = await Category.create(req.body)
+    router.post('/', async (req, res) => {
+        const model = await req.Model.create(req.body)
         res.send(model)
     })
-    router.get('/categories', async (req, res) => {
+    router.get('/', async (req, res) => {
+
         // const Category = require("../../models/Category")
-        const items = await Category.find().populate('parent').limit(10)
+        const queryOptions = {}
+        if (req.Model.modelNames === "Categery") {
+            queryOptions.populate = "parent"
+
+        }
+        const items = await req.Model.find().setOptions(queryOptions).limit(10)
         res.send(items)
     })
-    router.get('/categories/:id', async (req, res) => {
+    router.get('/:id', async (req, res) => {
         // const Category = require("../../models/Category")
-        const items = await Category.findById(req.params.id).limit(10)
+        const items = await req.Model.findById(req.params.id).limit(10)
         res.send(items)
     })
-    router.put('/categories/:id', async (req, res) => {
+    router.put('/:id', async (req, res) => {
         // const Category = require("../../models/Category")
-        const items = await Category.findByIdAndUpdate(req.params.id, req.body)
+        const items = await req.Model.findByIdAndUpdate(req.params.id, req.body)
         res.send(items)
     })
     // 通用删除接口
-    router.delete('/categories/:id', async (req, res) => {
-        const items = await Category.findByIdAndDelete(req.params.id)
+    router.delete('/:id', async (req, res) => {
+        const items = await req.Model.findByIdAndDelete(req.params.id)
         res.send({
             success: true
         })
     })
 
-    app.use("/admin/api", router)
+    app.use("/admin/api/rest/:resource", async (req, res, next) => {
+        const modelNames = require("inflection").classify(req.params.resource)
+        req.Model = require(`../../models/${modelNames}`)
+        next()
+    }, router)
 
+    // 图片上传接口
+    const multer = require('multer') // 导入上传文件中间件的依赖包，需要先安装
+    const upload = multer({
+        dest: __dirname + '/../../uploads'
+    })
+    // 上传中间件
+    app.post('/admin/api/upload',  upload.single('file'), async (req, res) => {
+        const file = req.file
+        file.url = `http://localhost:3000/uploads/${file.filename}`
+        res.send(file)
+    })
 
 }

@@ -39,10 +39,10 @@ export default {
       let res;
       if (this.id) {
         //修改
-        res = await this.$http.put(`/categories/${this.id}`, this.model);
+        res = await this.$http.put(`/rest/categories/${this.id}`, this.model);
       } else {
         // 创建
-        res = await this.$http.post("/categories", this.model);
+        res = await this.$http.post("/rest/categories", this.model);
       }
       this.model = res.data;
        this.$router.push("/categories/list");
@@ -52,12 +52,12 @@ export default {
         });
     },
     async fetch() {
-      let res = await this.$http.get(`/categories/${this.id}`);
+      let res = await this.$http.get(`/rest/categories/${this.id}`);
       this.model = res.data
     },
     // 获取父级分类列表
     async fetchParents() {
-      const res = await this.$http.get(`/categories`);
+      const res = await this.$http.get(`/rest/categories`);
       this.parents = res.data;
     }
   },
