@@ -1,7 +1,7 @@
 module.exports = app => {
     const express = require("express")
     const jwt = require('jsonwebtoken')
-    console.log(jwt)
+    console.log(jwt,"jwt")
     const AdminUser = require('../../models/AdminUser')
 
     const router = express.Router({
@@ -60,18 +60,17 @@ module.exports = app => {
 
 //-----------------------/
      // 登录接口
-  app.post('/admin/api/login', async (req, res) => {
+ // 登录接口
+ app.post('/admin/api/login', async (req, res) => {
     const {
       username,
       password
     } = req.body;
     // 1.根据用户名找用户
-    // res.send(req.body)
 
     const user = await AdminUser.findOne({
       username
     }).select('+password')
-    console.log(user,12)
     // assert(user, 422, {
     //   message: '用户不存在！'
     // })
@@ -82,7 +81,6 @@ module.exports = app => {
     }
     // 2.校验密码
     const isValid = require('bcryptjs').compareSync(password, user.password)
-    console.log(isValid)
     // assert(isValid, 422, { message:'密码错误！'})
     if (!isValid || isValid == '') {
       return res.status(422).send({
@@ -98,7 +96,6 @@ module.exports = app => {
     }, app.get('secret'), {
       expiresIn: '24h'
     }) // 通过调用 sign 方法, 把 **用户信息**、**密钥** 生成token，并设置过期时间 
-    console.log(token)
     res.send({
       user,
       token
