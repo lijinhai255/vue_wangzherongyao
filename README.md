@@ -8,8 +8,9 @@ vue--node-mongodb-wzry是一个移动端的仿王者荣耀手机端官网和后�
 ### 1、star本仓库并克隆项目到本地
 
 ```
+export PATH=/usr/local/mongodb/bin:$PATH
 sudo mongod
-- 2-15 分类编辑
+-2.7
 ```
 
 ### 2、进入项目目录

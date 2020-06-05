@@ -1,9 +1,12 @@
 module.exports = app => {
     const express = require("express")
+    const jwt = require('jsonwebtoken')
+    console.log(jwt)
+    const AdminUser = require('../../models/AdminUser')
+
     const router = express.Router({
         mergeParams: true // 合并url参数
     })
-    const Category = require("../../models/Category")
     router.post('/', async (req, res) => {
         const model = await req.Model.create(req.body)
         res.send(model)
@@ -54,5 +57,58 @@ module.exports = app => {
         file.url = `http://localhost:3000/uploads/${file.filename}`
         res.send(file)
     })
+
+//-----------------------/
+     // 登录接口
+  app.post('/admin/api/login', async (req, res) => {
+    const {
+      username,
+      password
+    } = req.body;
+    // 1.根据用户名找用户
+    // res.send(req.body)
+
+    const user = await AdminUser.findOne({
+      username
+    }).select('+password')
+    console.log(user,12)
+    // assert(user, 422, {
+    //   message: '用户不存在！'
+    // })
+    if (!user) {
+      return res.status(422).send({
+        message: '用户不存在！'
+      })
+    }
+    // 2.校验密码
+    const isValid = require('bcryptjs').compareSync(password, user.password)
+    console.log(isValid)
+    // assert(isValid, 422, { message:'密码错误！'})
+    if (!isValid || isValid == '') {
+      return res.status(422).send({
+        message: '密码错误！'
+      })
+    }
+
+
+    // 3.返回token
+
+    const token = jwt.sign({
+      id: user._id
+    }, app.get('secret'), {
+      expiresIn: '24h'
+    }) // 通过调用 sign 方法, 把 **用户信息**、**密钥** 生成token，并设置过期时间 
+    console.log(token)
+    res.send({
+      user,
+      token
+    })
+  })
+  //错处统一处理函数
+  app.use(async (err, req, res, next) => {
+    res.status(err.statusCode || 500).send({
+      message: err.message
+    })
+  })
 
 }
