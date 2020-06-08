@@ -18,7 +18,6 @@ Vue.mixin({
         Authorization:`Bearer ${localStorage.token || ''}`
       }
      }
-
   }
 })
 new Vue({

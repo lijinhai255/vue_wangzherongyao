@@ -1,67 +1,87 @@
 module.exports = app => {
-    const express = require("express")
-    const jwt = require('jsonwebtoken')
-    console.log(jwt,"jwt")
-    const AdminUser = require('../../models/AdminUser')
+  const express = require("express")
+  const jwt = require('jsonwebtoken')
+  const AdminUser = require('../../models/AdminUser')
+  const router = express.Router({
+    mergeParams: true // 合并url参数
+  })
 
-    const router = express.Router({
-        mergeParams: true // 合并url参数
+  // 通用新增接口
+  router.post('/', async (req, res) => {
+    const model = await req.Model.create(req.body)
+    res.send(model)
+  })
+  // 通用修改接口
+  router.put('/:id', async (req, res) => {
+    const model = await req.Model.findByIdAndUpdate(req.params.id, req.body)
+    res.send(model)
+  })
+  // 通用删除接口
+  router.delete('/:id', async (req, res) => {
+    await req.Model.findByIdAndDelete(req.params.id)
+    res.send({
+      success: true
     })
-    router.post('/', async (req, res) => {
-        const model = await req.Model.create(req.body)
-        res.send(model)
-    })
-    router.get('/', async (req, res) => {
+  })
+  // 通用获取列表接口
+  router.get('/', async (req, res) => {
+    const queryOptions = {}
+    let pageNum = req.query.pageNum;
+    let pageSize = req.query.pageSize;
+    let count = await req.Model.find().count() // 总条数
+    let items = ''
+    let obj = ''
+    // 为了通用性，这里不单独写Category的接口，因为Category要特殊获取上级分类，
+    // 所以这里将它设置为动态参数传进去，以后类似的特殊请求都可以这样处理
+    if (req.Model.modelName === 'Category' || req.Model.modelName === 'Model') {
+      queryOptions.populate = 'parent'
+    }
+    if (pageNum) {
+      items = await req.Model.find()
+        .setOptions(queryOptions)
+        .skip(parseInt(pageSize) * parseInt(pageNum - 1))
+        .limit(parseInt(pageSize));
+      obj = {
+        count,
+        items
+      }
+    } else {
+      obj = await req.Model.find().setOptions(queryOptions).limit(count)
+    }
+    res.send(obj)
+  })
+  // 通用获取一条数据接口
+  router.get('/:id', async (req, res) => {
+    const model = await req.Model.findById(req.params.id)
+    res.send(model)
+  })
 
-        // const Category = require("../../models/Category")
-        const queryOptions = {}
-        if (req.Model.modelNames === "Categery") {
-            queryOptions.populate = "parent"
 
-        }
-        const items = await req.Model.find().setOptions(queryOptions).limit(10)
-        res.send(items)
-    })
-    router.get('/:id', async (req, res) => {
-        // const Category = require("../../models/Category")
-        const items = await req.Model.findById(req.params.id).limit(10)
-        res.send(items)
-    })
-    router.put('/:id', async (req, res) => {
-        // const Category = require("../../models/Category")
-        const items = await req.Model.findByIdAndUpdate(req.params.id, req.body)
-        res.send(items)
-    })
-    // 通用删除接口
-    router.delete('/:id', async (req, res) => {
-        const items = await req.Model.findByIdAndDelete(req.params.id)
-        res.send({
-            success: true
-        })
-    })
+  // 登录校验中间件
+  const authMiddleWare = require('../../middleware/auth.js')
+  // 资源匹配中间件
+  const resourceMiddleWare = require('../../middleware/resource.js')
 
-    app.use("/admin/api/rest/:resource", async (req, res, next) => {
-        const modelNames = require("inflection").classify(req.params.resource)
-        req.Model = require(`../../models/${modelNames}`)
-        next()
-    }, router)
+  // 资源路由
+  app.use('/admin/api/rest/:resource', authMiddleWare(), resourceMiddleWare(), router)
 
-    // 图片上传接口
-    const multer = require('multer') // 导入上传文件中间件的依赖包，需要先安装
-    const upload = multer({
-        dest: __dirname + '/../../uploads'
-    })
-    // 上传中间件
-    app.post('/admin/api/upload',  upload.single('file'), async (req, res) => {
-        const file = req.file
-        file.url = `http://localhost:3000/uploads/${file.filename}`
-        res.send(file)
-    })
 
-//-----------------------/
-     // 登录接口
- // 登录接口
- app.post('/admin/api/login', async (req, res) => {
+
+  // 图片上传接口
+  const multer = require('multer') // 导入上传文件中间件的依赖包，需要先安装
+  const upload = multer({
+    dest: __dirname + '/../../uploads'
+  })
+  // 上传中间件
+  app.post('/admin/api/upload', authMiddleWare(), upload.single('file'), async (req, res) => {
+    const file = req.file
+    file.url = `http://localhost:3000/uploads/${file.filename}`
+    res.send(file)
+  })
+
+
+  // 登录接口
+  app.post('/admin/api/login', async (req, res) => {
     const {
       username,
       password

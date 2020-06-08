@@ -27,7 +27,7 @@
       <!-- 右侧主体 -->
       
       <el-main class="mian-right">
-        <router-view></router-view>
+        <router-view :key="$route.path"></router-view>
       </el-main>
      
     </el-container>

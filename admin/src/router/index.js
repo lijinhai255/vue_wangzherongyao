@@ -73,5 +73,11 @@ const router = new VueRouter({
   base: process.env.BASE_URL,
   routes
 })
-
+//路由守卫
+router.beforeEach((to, from ,next) => {
+  if (!to.meta.isPublic && !localStorage.token) {
+    return next('/login')
+  }
+  next()
+})
 export default router

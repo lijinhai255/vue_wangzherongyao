@@ -8,5 +8,5 @@ module.exports = app => {
         }
   )
   //引用models中所有的文件（需要安装‘require-all’插件）
-//   require('require-all')(__dirname + '/../models')
+  require('require-all')(__dirname + '/../models')
 }

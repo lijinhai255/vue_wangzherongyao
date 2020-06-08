@@ -2,7 +2,7 @@
 <template>
   <div>
     <!-- 导航区 -->
-    <!-- <Breadcrumb :breadcrumbItem="breadcrumbItem"></Breadcrumb> -->
+    <Breadcrumb :breadcrumbItem="breadcrumbItem"></Breadcrumb>
     <!-- 内容区 -->
     <el-card>
       <el-row :gutter="20">
@@ -37,10 +37,10 @@
   </div>
 </template>
 <script>
-  // import Breadcrumb from '../components/Breadcrumb'
+  import Breadcrumb from '../components/Breadcrumb'
   export default {
     components: {
-      // Breadcrumb
+      Breadcrumb
     },
     data() {
       return {
@@ -57,7 +57,7 @@
       async fetch() {
         const res = await this.$http.get(
           `rest/articles?pageNum=${this.pageNum}&pageSize=${this.pageSize}&query=${this.query}`);
-        this.items = res.data;
+        this.items = res.data.items;
         this.total = res.data.count;
       },
       // 删除

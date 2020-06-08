@@ -10,7 +10,8 @@ vue--node-mongodb-wzry是一个移动端的仿王者荣耀手机端官网和后�
 ```
 export PATH=/usr/local/mongodb/bin:$PATH
 sudo mongod
--2.7
+-3.13
+
 ```
 
 ### 2、进入项目目录

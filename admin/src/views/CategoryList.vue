@@ -1,7 +1,22 @@
+<!---->
 <template>
-    <div class="edit">
-       <h1>分类列表</h1>
-        <el-table :data="items" height="550" border stripe>
+  <div>
+    <!-- 导航区 -->
+    <Breadcrumb :breadcrumbItem="breadcrumbItem"></Breadcrumb>
+    <!-- 内容区 -->
+    <el-card>
+      <el-row :gutter="20">
+        <el-col :span="7">
+          <el-input placeholder="请输入内容" clearable v-model="query" @clear="fetch()">
+            <el-button slot="append" icon="el-icon-search" @click="fetch()"></el-button>
+          </el-input>
+        </el-col>
+        <el-col :span="4">
+          <el-button type="primary" @click='$router.push("/categories/create")'>
+            <i class="el-icon-plus"></i>添加</el-button>
+        </el-col>
+      </el-row>
+      <el-table :data="items" height="550" border stripe>
         <el-table-column type="index"></el-table-column>
         <el-table-column prop="_id" label="ID" width="230"></el-table-column>
         <el-table-column prop="parent.name" label="上级分类"></el-table-column>
@@ -14,13 +29,19 @@
           </template>
         </el-table-column>
       </el-table>
-    </div>
+      <!-- 分页区 -->
+      <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="pageNum"
+        :page-sizes="[10, 15, 20 , 25,]" :page-size="pageSize" layout="total, sizes, prev, pager, next, jumper"
+        :total="total" background>
+      </el-pagination>
+    </el-card>
+  </div>
 </template>
 <script>
-//   import Breadcrumb from '../components/Breadcrumb'?
+  import Breadcrumb from '../components/Breadcrumb'
   export default {
     components: {
-    //   Breadcrumb
+      Breadcrumb
     },
     data() {
       return {
@@ -32,14 +53,12 @@
         pageSize: 10, // 页大小
       }
     },
-     created() {
-      this.fetch(); // 在列表组件渲染成功之前自动执行该方法获取数据库数据
-    },
     methods: {
-          // 获取列表
+      // 获取列表
       async fetch() {
-        const res = await this.$http.get(`/rest/categories`);
-        this.items = res.data;
+        const res = await this.$http.get(
+          `rest/categories?pageNum=${this.pageNum}&pageSize=${this.pageSize}&query = ${this.query}`);
+        this.items = res.data.items;
         this.total = res.data.count;
       },
       // 删除
@@ -49,7 +68,7 @@
           cancelButtonText: '取消',
           type: 'warning'
         }).then(async () => {
-          await this.$http.delete(`/rest/categories/${row._id}`)
+          await this.$http.delete(`rest/categories/${row._id}`)
           this.$message({
             type: 'success',
             message: '删除成功!'
@@ -57,6 +76,21 @@
           this.fetch(); // 刷新列表
         }).catch(() => {});
       },
+      // 监听页码值的改变
+      handleCurrentChange(newPage) {
+        this.pageNum = newPage
+        this.fetch()
+      },
+      // 监听页码大小
+      handleSizeChange(newSize) {
+        this.pageSize = newSize
+        this.fetch()
+      }
+    },
+    created() {
+      this.fetch(); // 在列表组件渲染成功之前自动执行该方法获取数据库数据
     }
   }
 </script>
+<style lang='less' scoped>
+</style>

@@ -56,8 +56,7 @@
       async fetch() {
         const res = await this.$http.get(
           `rest/admin_users?pageNum=${this.pageNum}&pageSize=${this.pageSize}&query = ${this.query}`);
-        // this.items = res.data.items;
-        this.items = res.data;
+        this.items = res.data.items;
         this.total = res.data.count;
       },
       // 删除
